@@ -11,7 +11,22 @@ from ui import (
     render_sidebar,
     summarize_assistant_response,
 )
+import uuid
+def main() -> None:
+    if "_session_id" not in st.session_state:
+        st.session_state["_session_id"] = str(uuid.uuid4())
 
+    configure_page()
+    ...
+def get_store() -> ChatStore:
+    session_key = "chat_store"
+
+    if session_key not in st.session_state:
+        st.session_state[session_key] = ChatStore(
+            path=f"storage/{st.session_state.get('_session_id', 'default')}.pkl"
+        )
+
+    return st.session_state[session_key]
 
 def configure_page() -> None:
     st.set_page_config(
@@ -21,13 +36,6 @@ def configure_page() -> None:
     )
     st.title("Finance Assistant")
     st.caption("Multi-agent equity analysis with LangGraph routing and memory.")
-
-
-def get_store() -> ChatStore:
-    if "chat_store" not in st.session_state:
-        st.session_state.chat_store = ChatStore()
-    return st.session_state.chat_store
-
 
 def ensure_active_chat(store: ChatStore) -> str:
     active_chat_id = st.session_state.get("active_chat_id")
