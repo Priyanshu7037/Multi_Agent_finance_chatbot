@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.env
+
+chat_store.pkl
+
+.venv/
+venv/
+
+.streamlit/secrets.toml
+
+*.log
