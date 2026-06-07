@@ -42,12 +42,14 @@ class ChatStore:
     """
 
     def __init__(self, path: Path | str | None = "storage/chat_store.pkl") -> None:
-        self.path = None if path is None else Path(path)
-        if self.path is not None:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            self._threads: Dict[str, ChatThread] = self._load()
-        else:
-            self._threads = {}
+        if path is None:
+            self.path = None
+            self._threads: Dict[str, ChatThread] = {}
+            return
+
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._threads = self._load()
 
     def list_threads(self) -> List[ChatThread]:
         return sorted(
