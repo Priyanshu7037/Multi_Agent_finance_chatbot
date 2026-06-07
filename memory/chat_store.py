@@ -34,12 +34,20 @@ class ChatThread:
 
 
 class ChatStore:
-    """Small local persistence layer for Streamlit chat sessions."""
+    """Small local persistence layer for Streamlit chat sessions.
 
-    def __init__(self, path: Path | str = "storage/chat_store.pkl") -> None:
-        self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._threads: Dict[str, ChatThread] = self._load()
+    When path is None, the store remains fully in-memory and never reads or
+    writes to disk. This ensures each visitor only sees their own session
+    chat history when the app is served by Streamlit.
+    """
+
+    def __init__(self, path: Path | str | None = "storage/chat_store.pkl") -> None:
+        self.path = None if path is None else Path(path)
+        if self.path is not None:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            self._threads: Dict[str, ChatThread] = self._load()
+        else:
+            self._threads = {}
 
     def list_threads(self) -> List[ChatThread]:
         return sorted(
@@ -88,6 +96,9 @@ class ChatStore:
         return []
 
     def _load(self) -> Dict[str, ChatThread]:
+        if self.path is None:
+            return {}
+
         if not self.path.exists():
             return {}
 
@@ -103,6 +114,9 @@ class ChatStore:
         return {}
 
     def _save(self) -> None:
+        if self.path is None:
+            return
+
         temp_path = self.path.with_suffix(".tmp")
         with temp_path.open("wb") as file:
             pickle.dump(self._threads, file)

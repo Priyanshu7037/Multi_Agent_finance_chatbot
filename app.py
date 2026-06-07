@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Dict
 
 import streamlit as st
-
 from agents.graph_workflow import run_finance_graph
 from memory import ChatMessage, ChatStore
 from ui import (
@@ -12,21 +11,23 @@ from ui import (
     summarize_assistant_response,
 )
 import uuid
-def main() -> None:
+
+
+def initialize_session() -> None:
     if "_session_id" not in st.session_state:
         st.session_state["_session_id"] = str(uuid.uuid4())
 
-    configure_page()
-    ...
+
 def get_store() -> ChatStore:
     session_key = "chat_store"
 
     if session_key not in st.session_state:
-        st.session_state[session_key] = ChatStore(
-            path=f"storage/{st.session_state.get('_session_id', 'default')}.pkl"
-        )
+        # Use session-only memory for chat history by default.
+        # No cross-user persistence or disk I/O occurs when path=None.
+        st.session_state[session_key] = ChatStore(path=None)
 
     return st.session_state[session_key]
+
 
 def configure_page() -> None:
     st.set_page_config(
@@ -36,6 +37,7 @@ def configure_page() -> None:
     )
     st.title("Finance Assistant")
     st.caption("Multi-agent equity analysis with LangGraph routing and memory.")
+
 
 def ensure_active_chat(store: ChatStore) -> str:
     active_chat_id = st.session_state.get("active_chat_id")
@@ -115,7 +117,10 @@ def build_error_state(prompt: str, error: Exception) -> Dict[str, Any]:
 
 
 def main() -> None:
+    initialize_session()
     configure_page()
+    st.sidebar.caption(f"Session: {st.session_state['_session_id'][:8]}")
+
     store = get_store()
     active_chat_id = ensure_active_chat(store)
     active_chat_id = render_sidebar(store, active_chat_id)

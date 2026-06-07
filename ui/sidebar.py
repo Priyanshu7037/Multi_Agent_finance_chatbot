@@ -6,7 +6,10 @@ import streamlit as st
 
 from memory import ChatStore
 
-
+st.sidebar.write(
+    "Session ID:",
+    st.session_state.get("_session_id")
+)
 def render_sidebar(store: ChatStore, active_chat_id: Optional[str]) -> str:
     st.sidebar.title("Finance Assistant")
 
