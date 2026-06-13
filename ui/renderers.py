@@ -79,10 +79,11 @@ def render_workflow_output(graph_state: Dict[str, Any]) -> None:
         render_committee(result)
     elif workflow == "compare_and_recommend":
         render_compare_and_recommend(result)
+    elif workflow == "portfolio":
+        render_portfolio(result)
     elif workflow in {
         "history",
         "comparison",
-        "portfolio",
         "news",
         "tutor",
         "general",
@@ -158,6 +159,71 @@ def render_agent(agent: Any) -> None:
 
         with st.expander("Reasoning"):
             st.text(agent.reasoning or "N/A")
+
+
+def render_portfolio(result: Any) -> None:
+    if not isinstance(result, dict):
+        st.warning("No portfolio result was produced.")
+        return
+
+    st.subheader("Portfolio Committee")
+    cols = st.columns(6)
+    cols[0].metric("Risk Profile", result.get("risk_profile", "N/A"))
+    cols[1].metric("Risk Score", result.get("risk_score", "N/A"))
+    cols[2].metric("Market Regime", result.get("market_regime", "N/A").title())
+    cols[3].metric("Portfolio Score", result.get("portfolio_score", "N/A"))
+    cols[4].metric("Confidence", f"{result.get('confidence', 0.0) * 100:.0f}%")
+    cols[5].metric("Health Score", result.get("health_score", "N/A"))
+
+    allocation = result.get("sector_allocation") or {}
+    if allocation:
+        st.markdown("**Sector Allocation**")
+        st.table(
+            [{"Sector": sector, "Allocation (%)": weight} for sector, weight in allocation.items()]
+        )
+
+    breakdown = result.get("score_breakdown") or {}
+    if breakdown:
+        st.markdown("**Portfolio Score Breakdown**")
+        st.table(
+            [
+                {"Metric": metric.replace("_", " ").title(), "Score": value}
+                for metric, value in breakdown.items()
+            ]
+        )
+
+    stock_selection = result.get("stock_selection") or {}
+    if stock_selection:
+        st.markdown("**Recommended Stocks**")
+        for sector, candidates in stock_selection.items():
+            with st.expander(f"{sector} ({len(candidates)} candidates)"):
+                for candidate in candidates:
+                    st.markdown(
+                        f"- {candidate.get('ticker')} — Score: {candidate.get('score')} "
+                        f"(F:{candidate.get('fundamental_score')}, S:{candidate.get('sentiment_score')}, Q:{candidate.get('quant_score')})"
+                    )
+
+    health_review = result.get("health_review") or {}
+    if health_review:
+        st.markdown("**Portfolio Health Review**")
+        if health_review.get("issues"):
+            st.markdown("**Issues**")
+            for issue in health_review["issues"]:
+                st.markdown(f"- {issue}")
+        if health_review.get("recommendations"):
+            st.markdown("**Recommendations**")
+            for recommendation in health_review["recommendations"]:
+                st.markdown(f"- {recommendation}")
+
+    rebalance = result.get("rebalance_suggestions") or []
+    if rebalance:
+        st.markdown("**Rebalance Guidance**")
+        for suggestion in rebalance:
+            st.markdown(f"- {suggestion}")
+
+    if result.get("summary"):
+        st.markdown("**Portfolio Summary**")
+        st.markdown(result.get("summary"))
 
 
 def render_report(report: Any) -> None:

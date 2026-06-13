@@ -27,6 +27,10 @@ def validate_route(route: Dict[str, Any]) -> Dict[str, Any]:
     if ticker is not None and not isinstance(ticker, str):
         ticker = None
 
+    company_name = route.get("company_name")
+    if company_name is not None and not isinstance(company_name, str):
+        company_name = None
+
     tickers = route.get("tickers")
     if isinstance(tickers, list):
         tickers = [str(item) for item in tickers if isinstance(item, str)]
@@ -53,6 +57,7 @@ def validate_route(route: Dict[str, Any]) -> Dict[str, Any]:
     validated: Dict[str, Any] = {
         "workflow": workflow,
         "ticker": ticker,
+        "company_name": company_name,
         "tickers": tickers,
         "confidence": confidence,
         "reason": reason,
@@ -75,14 +80,15 @@ def build_router_prompt(query: str, memory_context: str) -> str:
         "Do not classify the memory itself.\n"
         "Return valid JSON only with no markdown or additional text.\n"
         "Supported workflows: committee, history, comparison, compare_and_recommend, portfolio, news, tutor, general.\n"
-        "Required fields: workflow, ticker, tickers, confidence, reason.\n"
-        "Optional field: agents.\n"
-        "If the query is unclear or does not fit a specialized workflow, use 'general'.\n"
+        "Required fields: workflow, confidence, reason.\n"
+        "Optional fields: company_name, ticker, tickers, agents.\n"
         "If the user asks for stock recommendation or investment advice about a single stock, prefer 'committee'.\n"
         "If the user asks for price history, choose 'history'.\n"
         "If the user asks for comparison only, choose 'comparison'.\n"
         "If the user asks to compare multiple stocks and choose one, choose 'compare_and_recommend'.\n"
-        "If the user asks about portfolio allocation, choose 'portfolio'.\n"
+        "If the user asks about a single company, return company_name instead of NSE ticker symbols.\n"
+        "If the user asks about portfolio allocation, invest ₹X, build a portfolio, "
+        "create diversification, select a retirement portfolio, or allocate money, choose 'portfolio'.\n"
         "If the user asks for news sentiment, choose 'news'.\n"
         "If the user asks for an explanation or definition, choose 'tutor'.\n"
         "Conversation Memory:\n"
@@ -92,7 +98,7 @@ def build_router_prompt(query: str, memory_context: str) -> str:
         "Example output:\n"
         "{\n"
         "  \"workflow\": \"committee\",\n"
-        "  \"ticker\": \"TCS.NS\",\n"
+        "  \"company_name\": \"TCS\",\n"
         "  \"tickers\": [\"TCS.NS\"],\n"
         "  \"confidence\": 0.96,\n"
         "  \"reason\": \"User asks for a recommendation on a single stock.\",\n"
@@ -111,7 +117,7 @@ def build_router_prompt(query: str, memory_context: str) -> str:
         "}\n"
         "{\n"
         "  \"workflow\": \"history\",\n"
-        "  \"ticker\": \"INFY.NS\",\n"
+        "  \"company_name\": \"Infosys\",\n"
         "  \"confidence\": 0.91,\n"
         "  \"reason\": \"User requested stock price history.\",\n"
         "}"

@@ -1,0 +1,51 @@
+ticker,company_name,sector,industry
+ADANIPORTS.NS,Adani Ports and Special Economic Zone,Industrials,Logistics
+ASIANPAINT.NS,Asian Paints,Materials,Paints & Coatings
+AXISBANK.NS,Axis Bank,Financial Services,Banking
+BAJAJ-AUTO.NS,Bajaj Auto,Consumer Cyclical,Auto Manufacturers
+BAJAJFINSV.NS,Bajaj Finserv,Financial Services,Financial Conglomerates
+BAJFINANCE.NS,Bajaj Finance,Financial Services,Consumer Finance
+BHARTIARTL.NS,Bharti Airtel,Communication Services,Telecom Services
+BPCL.NS,Bharat Petroleum Corporation Limited,Energy,Oil & Gas Refining
+BRITANNIA.NS,Britannia Industries,Consumer Defensive,Food Products
+CIPLA.NS,Cipla,Healthcare,Pharmaceuticals
+COALINDIA.NS,Coal India,Energy,Coal
+DIVISLAB.NS,Divi's Laboratories,Healthcare,Pharmaceuticals
+DRREDDY.NS,Dr. Reddy's Laboratories,Healthcare,Pharmaceuticals
+EICHERMOT.NS,Eicher Motors,Consumer Cyclical,Auto Manufacturers
+GAIL.NS,GAIL (India),Energy,Oil & Gas Midstream
+GRASIM.NS,Grasim Industries,Materials,Building Materials
+HCLTECH.NS,HCL Technologies,Technology,Information Technology Services
+HDFC.NS,HDFC,Financial Services,Financial Conglomerates
+HDFCBANK.NS,HDFC Bank,Financial Services,Banking
+HDFCLIFE.NS,HDFC Life Insurance Company,Financial Services,Insurance
+HEROMOTOCO.NS,Hero MotoCorp,Consumer Cyclical,Auto Manufacturers
+HINDALCO.NS,Hindalco Industries,Materials,Metals & Mining
+HINDUNILVR.NS,Hindustan Unilever,Consumer Defensive,Household Products
+ICICIBANK.NS,ICICI Bank,Financial Services,Banking
+INDUSINDBK.NS,IndusInd Bank,Financial Services,Banking
+INFY.NS,Infosys,Technology,Information Technology Services
+ITC.NS,ITC,Consumer Defensive,Food Products
+JSWSTEEL.NS,JSW Steel,Materials,Metals & Mining
+KOTAKBANK.NS,Kotak Mahindra Bank,Financial Services,Banking
+LT.NS,Larsen & Toubro,Industrials,Engineering & Construction
+M&M.NS,Mahindra & Mahindra,Consumer Cyclical,Auto Manufacturers
+MARUTI.NS,Maruti Suzuki India,Consumer Cyclical,Auto Manufacturers
+NESTLEIND.NS,Nestle India,Consumer Defensive,Food Products
+NTPC.NS,NTPC,Utilities,Electric Utilities
+ONGC.NS,Oil and Natural Gas Corporation,Energy,Oil & Gas Exploration
+POWERGRID.NS,Power Grid Corporation of India,Utilities,Electric Utilities
+RELIANCE.NS,Reliance Industries,Energy,Integrated Oil & Gas
+SBIN.NS,State Bank of India,Financial Services,Banking
+SBILIFE.NS,SBI Life Insurance Company,Financial Services,Insurance
+SUNPHARMA.NS,Sun Pharmaceutical Industries,Healthcare,Pharmaceuticals
+TATACONSUM.NS,Tata Consumer Products,Consumer Defensive,Food Products
+TATAMOTORS.NS,Tata Motors,Consumer Cyclical,Auto Manufacturers
+TATASTEEL.NS,Tata Steel,Materials,Metals & Mining
+TCS.NS,Tata Consultancy Services,Technology,Information Technology Services
+TECHM.NS,Tech Mahindra,Technology,Information Technology Services
+TITAN.NS,Titan Company,Consumer Cyclical,Apparel Retail
+ULTRACEMCO.NS,UltraTech Cement,Materials,Building Materials
+UPL.NS,UPL,Materials,Specialty Chemicals
+WIPRO.NS,Wipro,Technology,Information Technology Services
+ZEEL.NS,Zee Entertainment Enterprises,Communication Services,Media

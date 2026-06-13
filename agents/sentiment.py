@@ -1,5 +1,6 @@
 from data.models import AgentOutput
 from tools.llm import generate_json
+from tools.ticker_resolver import TickerResolutionError, resolve_ticker
 from tools.yahoo_finance import get_company_news
 
 def sentiment_to_score(sentiment):
@@ -26,8 +27,21 @@ def sentiment_to_score(sentiment):
 
 def analyze(ticker):
 
+    try:
+        resolved_ticker = resolve_ticker(ticker)
+    except TickerResolutionError as error:
+        return AgentOutput(
+            agent_name="Sentiment",
+            score=50,
+            confidence=20,
+            recommendation="HOLD",
+            strengths=[],
+            weaknesses=[str(error)],
+            reasoning=str(error)
+        )
+
     headlines = get_company_news(
-        ticker,
+        resolved_ticker,
         limit=10
     )
 

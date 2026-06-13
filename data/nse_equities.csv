@@ -1,0 +1,18 @@
+﻿ticker,company_name,sector,industry,market_cap_category
+RELIANCE.NS,Reliance Industries,Energy,Oil & Gas,Large Cap
+TCS.NS,Tata Consultancy Services,Technology,IT Services,Large Cap
+INFY.NS,Infosys,Technology,IT Services,Large Cap
+HDFCBANK.NS,HDFC Bank,Financial Services,Banking,Large Cap
+BHARTIARTL.NS,Bharti Airtel,Communication Services,Telecommunication,Large Cap
+ITC.NS,ITC Ltd.,Consumer Defensive,Packaged Foods,Large Cap
+TATAMOTORS.NS,Tata Motors,Consumer Cyclical,Automobile and Auto Components,Large Cap
+AXISBANK.NS,Axis Bank Ltd.,Financial Services,Banking,Large Cap
+LT.NS,Larsen & Toubro,Industrials,Capital Goods,Large Cap
+ICICIBANK.NS,ICICI Bank Ltd.,Financial Services,Banking,Large Cap
+
+"# NOTE: This CSV contains representative sample rows.
+# For full NSE coverage (2000+ equities), replace this file with a curated
+# dataset containing all active NSE equities. Do not populate this file
+# by scraping external sites in automation. The dataset is the single
+# source of truth for ticker resolution and portfolio construction.
+"

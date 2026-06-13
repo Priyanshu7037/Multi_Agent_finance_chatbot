@@ -1,6 +1,7 @@
 import numpy as np
 
 from data.models import AgentOutput
+from tools.ticker_resolver import TickerResolutionError, resolve_ticker
 
 from tools.yahoo_finance import (
     get_price_history
@@ -42,8 +43,21 @@ def calculate_rsi(
 
 def analyze(ticker):
 
+    try:
+        resolved_ticker = resolve_ticker(ticker)
+    except TickerResolutionError as error:
+        return AgentOutput(
+            agent_name="Quant",
+            score=50,
+            confidence=20,
+            recommendation="HOLD",
+            strengths=[],
+            weaknesses=[str(error)],
+            reasoning=str(error)
+        )
+
     df = get_price_history(
-        ticker
+        resolved_ticker
     )
 
     if df.empty or "Close" not in df:

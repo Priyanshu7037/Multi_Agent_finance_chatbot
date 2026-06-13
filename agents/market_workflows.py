@@ -1,9 +1,12 @@
 from tools.llm import generate_text
+from tools.ticker_resolver import TickerResolutionError, resolve_ticker
 from tools.yahoo_finance import (
     get_company_data,
     get_company_news,
     get_price_history
 )
+
+from agents.portfolio_chair import run_portfolio_committee
 
 
 def format_value(value):
@@ -49,8 +52,20 @@ def build_report(title, data_lines, response):
 
 def history_analysis(ticker):
 
+    try:
+        resolved_ticker = resolve_ticker(ticker)
+    except TickerResolutionError as error:
+        return build_report(
+            "PRICE HISTORY",
+            [
+                f"Ticker: {ticker}",
+                str(error)
+            ],
+            str(error)
+        )
+
     history = get_price_history(
-        ticker
+        resolved_ticker
     )
 
     if history.empty:
@@ -127,13 +142,28 @@ def comparison_analysis(tickers):
     companies = []
 
     for ticker in tickers:
-        data = get_company_data(
-            ticker
-        )
+        try:
+            resolved_ticker = resolve_ticker(ticker)
+            data = get_company_data(resolved_ticker)
+            display_ticker = resolved_ticker
+        except TickerResolutionError as error:
+            data = {
+                "company_name": None,
+                "sector": None,
+                "market_cap": None,
+                "current_price": None,
+                "pe_ratio": None,
+                "revenue_growth": None,
+                "earnings_growth": None,
+                "debt_to_equity": None,
+                "free_cashflow": None,
+                "error": str(error),
+            }
+            display_ticker = ticker
 
         companies.append(
             {
-                "ticker": ticker,
+                "ticker": display_ticker,
                 **data
             }
         )
@@ -208,8 +238,20 @@ Do not invent missing metrics. Keep it under 220 words.
 
 def news_analysis(ticker):
 
+    try:
+        resolved_ticker = resolve_ticker(ticker)
+    except TickerResolutionError as error:
+        return build_report(
+            "LATEST NEWS",
+            [
+                f"Ticker: {ticker}",
+                str(error)
+            ],
+            str(error)
+        )
+
     headlines = get_company_news(
-        ticker
+        resolved_ticker
     )
 
     data_lines = [
@@ -262,84 +304,4 @@ Keep it under 180 words.
 
 
 def portfolio_analysis(query, tickers=None):
-
-    tickers = tickers or []
-    companies = []
-
-    for ticker in tickers:
-        data = get_company_data(
-            ticker
-        )
-
-        companies.append(
-            {
-                "ticker": ticker,
-                **data
-            }
-        )
-
-    data_lines = [
-        f"Query: {query}"
-    ]
-
-    for company in companies:
-        data_lines.extend(
-            [
-                "",
-                f"Ticker: {company['ticker']}",
-                f"Company: {format_value(company.get('company_name'))}",
-                f"Sector: {format_value(company.get('sector'))}",
-                f"Market Cap: {format_value(company.get('market_cap'))}",
-                f"PE Ratio: {format_value(company.get('pe_ratio'))}",
-                (
-                    "Revenue Growth: "
-                    f"{format_percent(company.get('revenue_growth'))}"
-                ),
-                (
-                    "Debt/Equity: "
-                    f"{format_value(company.get('debt_to_equity'))}"
-                )
-            ]
-        )
-
-    if not companies:
-        data_lines.append(
-            "No specific tickers were supplied by the router."
-        )
-
-    prompt = f"""
-You are a portfolio allocation assistant.
-
-The user asked:
-{query}
-
-Fetched portfolio context:
-{chr(10).join(data_lines)}
-
-Give a practical portfolio response.
-If tickers are available, discuss diversification and concentration.
-If tickers are missing, ask for holdings, capital, time horizon, and risk level,
-then give a sample allocation framework.
-
-Do not claim this is personalized financial advice.
-Keep it under 220 words.
-"""
-
-    response = llm_response(
-        prompt,
-        (
-            "I can help you build an investment plan. Please share your "
-            "investment amount, time horizon, risk level, monthly contribution, "
-            "and any stocks or funds you already hold. As a general framework, "
-            "a balanced plan usually starts with emergency savings, then uses "
-            "diversified equity exposure for long-term growth, debt or cash "
-            "instruments for stability, and periodic rebalancing. This is "
-            "educational guidance, not personalized financial advice."
-        )
-    )
-
-    return build_report(
-        "PORTFOLIO",
-        data_lines,
-        response
-    )
+    return run_portfolio_committee(query, tickers=tickers)

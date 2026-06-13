@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import streamlit as st
 from agents.graph_workflow import run_finance_graph
@@ -13,9 +13,55 @@ from ui import (
 import uuid
 
 
+QUERY_TEMPLATES: Dict[str, List[Dict[str, str]]] = {
+    "📊 Portfolio": [
+        {
+            "label": "Build a Portfolio",
+            "query": "I am 25 years old and have ₹10 lakh to invest for 15 years. Build a portfolio.",
+        },
+        {
+            "label": "Review Existing Portfolio",
+            "query": "I own TCS, Infosys and Reliance. Review my portfolio.",
+        },
+    ],
+    "📈 Stocks": [
+        {
+            "label": "Compare Stocks",
+            "query": "Compare TCS and Infosys and tell me which is better.",
+        },
+        {
+            "label": "Stock Recommendation",
+            "query": "Should I invest in Reliance Industries?",
+        },
+        {
+            "label": "Stock History",
+            "query": "Show historical performance of HDFC Bank.",
+        },
+    ],
+    "📰 News": [
+        {
+            "label": "Latest News",
+            "query": "What is the latest news about TCS?",
+        },
+    ],
+    "🎓 Learn": [
+        {
+            "label": "Learn a Finance Concept",
+            "query": "What is EBITDA?",
+        },
+    ],
+}
+
+
 def initialize_session() -> None:
     if "_session_id" not in st.session_state:
         st.session_state["_session_id"] = str(uuid.uuid4())
+
+    if "guided_query_text" not in st.session_state:
+        st.session_state.guided_query_text = ""
+
+    if "guided_query_category" not in st.session_state:
+        st.session_state.guided_query_category = next(iter(QUERY_TEMPLATES))
 
 
 def get_store() -> ChatStore:
@@ -101,6 +147,44 @@ def handle_user_prompt(store: ChatStore, chat_id: str, prompt: str) -> None:
     )
 
 
+def render_guided_query_input() -> str | None:
+    st.markdown("### 💡 Try one of these examples")
+
+    category = st.radio(
+        "Suggested Queries",
+        list(QUERY_TEMPLATES.keys()),
+        key="guided_query_category",
+        horizontal=True,
+    )
+
+    templates = QUERY_TEMPLATES[category]
+    columns = st.columns(len(templates))
+
+    for column, template in zip(columns, templates):
+        with column:
+            if st.button(
+                template["label"],
+                key=f"template-{category}-{template['label']}",
+                use_container_width=True,
+            ):
+                st.session_state.guided_query_text = template["query"]
+
+    query_text = st.text_area(
+        "Edit your query",
+        key="guided_query_text",
+        placeholder="Choose a suggested query above, edit it, or type your own question here.",
+        height=96,
+    )
+
+    if st.button("Ask Assistant", type="primary", use_container_width=True):
+        prompt = query_text.strip()
+        if prompt:
+            return prompt
+        st.warning("Enter a question or choose one of the examples first.")
+
+    return None
+
+
 def build_error_state(prompt: str, error: Exception) -> Dict[str, Any]:
     return {
         "query": prompt,
@@ -126,6 +210,11 @@ def main() -> None:
     active_chat_id = render_sidebar(store, active_chat_id)
 
     render_history(store, active_chat_id)
+
+    guided_prompt = render_guided_query_input()
+    if guided_prompt:
+        handle_user_prompt(store, active_chat_id, guided_prompt)
+        st.rerun()
 
     prompt = st.chat_input("Ask about a stock, portfolio, history, or news")
     if prompt:

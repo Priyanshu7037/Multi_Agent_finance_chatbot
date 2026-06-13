@@ -18,6 +18,7 @@ from agents.market_workflows import (
     news_analysis,
     portfolio_analysis,
 )
+from tools.ticker_resolver import resolve_ticker, TickerResolutionError
 from agents.compare_and_recommend import compare_and_recommend_analysis
 from agents.router import route_query
 from agents.tutor import tutor_response
@@ -37,6 +38,7 @@ class FinanceGraphState(TypedDict, total=False):
     query: str
     route: Dict[str, Any]
     workflow: str
+    company_name: str
     ticker: str
     tickers: List[str]
     result: Any
@@ -51,8 +53,14 @@ def get_ticker(route: Dict[str, Any]) -> Optional[str]:
     if ticker:
         return ticker
 
-    tickers = route.get("tickers")
+    company_name = route.get("company_name")
+    if company_name:
+        try:
+            return resolve_ticker(company_name)
+        except TickerResolutionError:
+            return None
 
+    tickers = route.get("tickers")
     if tickers:
         return tickers[0]
 
@@ -238,6 +246,7 @@ def remember_node(state: FinanceGraphState) -> FinanceGraphState:
         {
             "query": state.get("query", ""),
             "workflow": workflow,
+            "company_name": route.get("company_name"),
             "ticker": route.get("ticker") or state.get("ticker"),
             "tickers": route.get("tickers") or state.get("tickers") or [],
             "response_summary": summarize_result(

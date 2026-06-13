@@ -1,3 +1,4 @@
+from tools.ticker_resolver import TickerResolutionError, resolve_ticker
 from tools.yahoo_finance import get_company_data
 from data.models import AgentOutput
 
@@ -71,7 +72,20 @@ def score_pe(pe):
 
 def analyze(ticker):
 
-    data = get_company_data(ticker)
+    try:
+        resolved_ticker = resolve_ticker(ticker)
+    except TickerResolutionError as error:
+        return AgentOutput(
+            agent_name="Fundamental",
+            score=50,
+            confidence=20,
+            recommendation="HOLD",
+            strengths=[],
+            weaknesses=[str(error)],
+            reasoning=str(error)
+        )
+
+    data = get_company_data(resolved_ticker)
 
     tracked_values = [
         data.get("revenue_growth"),
