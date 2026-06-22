@@ -39,6 +39,7 @@ class FinanceGraphState(TypedDict, total=False):
     route: Dict[str, Any]
     workflow: str
     company_name: str
+    company_names: List[str]
     ticker: str
     tickers: List[str]
     result: Any
@@ -48,17 +49,23 @@ class FinanceGraphState(TypedDict, total=False):
 
 def get_ticker(route: Dict[str, Any]) -> Optional[str]:
     workflow = route.get("workflow", "general")
-    ticker = route.get("ticker")
-
-    if ticker:
-        return ticker
-
     company_name = route.get("company_name")
     if company_name:
         try:
             return resolve_ticker(company_name)
         except TickerResolutionError:
             return None
+
+    company_names = route.get("company_names") or []
+    if company_names:
+        try:
+            return resolve_ticker(company_names[0])
+        except TickerResolutionError:
+            return None
+
+    ticker = route.get("ticker")
+    if ticker:
+        return ticker
 
     tickers = route.get("tickers")
     if tickers:
@@ -142,13 +149,26 @@ def route_node(state: FinanceGraphState) -> FinanceGraphState:
     )
     workflow = route.get("workflow", "general")
 
-    if workflow == "committee" and not route.get("ticker") and not route.get("tickers"):
+    if workflow == "committee" and not route.get("ticker") and not route.get("tickers") and not route.get("company_name"):
         route = {
             **route,
             "workflow": "portfolio",
             "tickers": [],
         }
         workflow = "portfolio"
+
+    if route.get("company_names"):
+        resolved_tickers = []
+        for company_name in route.get("company_names", []):
+            try:
+                resolved_tickers.append(resolve_ticker(company_name))
+            except TickerResolutionError:
+                continue
+
+        route = {
+            **route,
+            "tickers": resolved_tickers,
+        }
 
     return {
         "route": route,

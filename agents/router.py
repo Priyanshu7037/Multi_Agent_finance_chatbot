@@ -37,6 +37,12 @@ def validate_route(route: Dict[str, Any]) -> Dict[str, Any]:
     else:
         tickers = []
 
+    company_names = route.get("company_names")
+    if isinstance(company_names, list):
+        company_names = [str(item) for item in company_names if isinstance(item, str)]
+    else:
+        company_names = []
+
     confidence = route.get("confidence")
     if isinstance(confidence, (float, int)):
         confidence = float(confidence)
@@ -54,10 +60,14 @@ def validate_route(route: Dict[str, Any]) -> Dict[str, Any]:
     else:
         agents = None
 
+    if company_name:
+        ticker = None
+
     validated: Dict[str, Any] = {
         "workflow": workflow,
         "ticker": ticker,
         "company_name": company_name,
+        "company_names": company_names,
         "tickers": tickers,
         "confidence": confidence,
         "reason": reason,
@@ -81,7 +91,7 @@ def build_router_prompt(query: str, memory_context: str) -> str:
         "Return valid JSON only with no markdown or additional text.\n"
         "Supported workflows: committee, history, comparison, compare_and_recommend, portfolio, news, tutor, general.\n"
         "Required fields: workflow, confidence, reason.\n"
-        "Optional fields: company_name, ticker, tickers, agents.\n"
+        "Optional fields: company_name, company_names, ticker, tickers, agents.\n"
         "If the user asks for stock recommendation or investment advice about a single stock, prefer 'committee'.\n"
         "If the user asks for price history, choose 'history'.\n"
         "If the user asks for comparison only, choose 'comparison'.\n"
@@ -99,21 +109,20 @@ def build_router_prompt(query: str, memory_context: str) -> str:
         "{\n"
         "  \"workflow\": \"committee\",\n"
         "  \"company_name\": \"TCS\",\n"
-        "  \"tickers\": [\"TCS.NS\"],\n"
         "  \"confidence\": 0.96,\n"
         "  \"reason\": \"User asks for a recommendation on a single stock.\",\n"
         "}\n"
         "{\n"
         "  \"workflow\": \"comparison\",\n"
-        "  \"tickers\": [\"TCS.NS\", \"INFY.NS\"],\n"
+        "  \"company_names\": [\"TCS\", \"Infosys\"],\n"
         "  \"confidence\": 0.94,\n"
-        "  \"reason\": \"User asked to compare two stocks without choosing one.\",\n"
+        "  \"reason\": \"User asked to compare two companies without choosing one.\",\n"
         "}\n"
         "{\n"
         "  \"workflow\": \"compare_and_recommend\",\n"
-        "  \"tickers\": [\"WIPRO.NS\", \"TCS.NS\"],\n"
+        "  \"company_names\": [\"Wipro\", \"TCS\"],\n"
         "  \"confidence\": 0.92,\n"
-        "  \"reason\": \"User wants to compare multiple stocks and choose one.\",\n"
+        "  \"reason\": \"User wants to compare multiple companies and choose one.\",\n"
         "}\n"
         "{\n"
         "  \"workflow\": \"history\",\n"

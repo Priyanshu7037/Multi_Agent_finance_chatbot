@@ -13,6 +13,17 @@ REQUIRED_COLUMNS = {"ticker", "company_name", "sector", "industry", "market_cap_
 
 
 def _find_universe_csv_paths() -> List[Path]:
+    primary = NSE_DATA_DIR / "nse_equities.csv"
+    if primary.exists():
+        try:
+            with primary.open("r", encoding="utf-8-sig", newline="") as fh:
+                reader = csv.DictReader(fh)
+                headers = {name.strip().lower() for name in reader.fieldnames or []}
+                if REQUIRED_COLUMNS.issubset(headers):
+                    return [primary]
+        except Exception:
+            pass
+
     paths: List[Path] = []
     for path in sorted(NSE_DATA_DIR.glob("*.csv")):
         try:
@@ -119,6 +130,27 @@ def _score_company_name(query: str, cleaned_name: str) -> int:
     return score
 
 
+@lru_cache(maxsize=1)
+def _get_nse_ticker_set() -> set[str]:
+    return {row["ticker"] for row in load_nse_universe()}
+
+
+@lru_cache(maxsize=1024)
+def is_valid_nse_ticker(ticker: str) -> bool:
+    symbol = (ticker or "").strip().upper()
+    if not symbol:
+        return False
+
+    ticker_set = _get_nse_ticker_set()
+    if symbol in ticker_set:
+        return True
+
+    if symbol.endswith(".NS"):
+        return False
+
+    return f"{symbol}.NS" in ticker_set
+
+
 @lru_cache(maxsize=1024)
 def search_company_candidates(query: str) -> List[str]:
     """Return ranked ticker candidates for a company query."""
@@ -156,17 +188,23 @@ def search_company_candidates(query: str) -> List[str]:
         compact_names[compact_name] = r["ticker"]
 
     results: List[str] = []
-
-    # exact ticker
-    if q in ticker_map:
-        return [ticker_map[q]]
-
     compact_q = q.replace(" ", "")
-    results: List[str] = []
 
     # exact company name and normalized variations
     if q in company_names:
         results.append(company_names[q])
+
+    if q in cleaned_company_names and cleaned_company_names[q] not in results:
+        results.append(cleaned_company_names[q])
+
+    if compact_q in compact_names and compact_names[compact_q] not in results:
+        results.append(compact_names[compact_q])
+
+    # If no company-name based candidate is found, allow exact ticker match as fallback
+    if not results and q in ticker_map:
+        return [ticker_map[q]]
+
+    scored: Dict[str, int] = {}
 
     if q in cleaned_company_names and cleaned_company_names[q] not in results:
         results.append(cleaned_company_names[q])

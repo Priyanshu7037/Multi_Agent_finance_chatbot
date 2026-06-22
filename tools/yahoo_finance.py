@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
+from tools.nse_universe import is_valid_nse_ticker
 
 CACHE_DIR = Path(__file__).resolve().parents[1] / ".cache" / "yfinance"
 CACHE_DIR.mkdir(
@@ -13,7 +14,25 @@ yf.set_tz_cache_location(
     str(CACHE_DIR)
 )
 
+
+def _normalize_ticker(ticker: str) -> str:
+    symbol = (ticker or "").strip().upper()
+    if not symbol:
+        raise ValueError("Ticker is required for Yahoo Finance operations.")
+
+    if symbol.endswith(".NS"):
+        normalized = symbol
+    else:
+        normalized = f"{symbol}.NS"
+
+    if not is_valid_nse_ticker(normalized):
+        raise ValueError("Ticker is not a valid NSE universe symbol.")
+
+    return normalized
+
+
 def get_company_news(ticker, limit=10):
+    ticker = _normalize_ticker(ticker)
 
     try:
         stock = yf.Ticker(ticker)
@@ -43,6 +62,7 @@ def get_company_news(ticker, limit=10):
     return headlines
 
 def get_company_data(ticker):
+    ticker = _normalize_ticker(ticker)
 
     try:
         stock = yf.Ticker(ticker)
@@ -69,6 +89,7 @@ def get_price_history(
     ticker,
     period="1y"
 ):
+    ticker = _normalize_ticker(ticker)
 
     try:
         stock = yf.Ticker(
